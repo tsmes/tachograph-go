@@ -489,15 +489,17 @@ func parseOneCalibrationRecordGen2(opts dd.UnmarshalOptions, data []byte) (gen2C
 	// authorisedSpeed (1 byte)
 	r.authorisedSpeedKmh = int32(data[idxAuthorisedSpeed])
 
-	// oldOdometerValue (3 bytes, 24-bit big-endian)
-	r.oldOdometerValueKm = int32(data[idxOldOdometer])<<16 |
-		int32(data[idxOldOdometer+1])<<8 |
-		int32(data[idxOldOdometer+2])
+	// oldOdometerValue (3 bytes, OdometerShort)
+	r.oldOdometerValueKm, err = opts.UnmarshalOdometerShort(data[idxOldOdometer : idxOldOdometer+3])
+	if err != nil {
+		return gen2CalibrationRecord{}, fmt.Errorf("old odometer value: %w", err)
+	}
 
-	// newOdometerValue (3 bytes, 24-bit big-endian)
-	r.newOdometerValueKm = int32(data[idxNewOdometer])<<16 |
-		int32(data[idxNewOdometer+1])<<8 |
-		int32(data[idxNewOdometer+2])
+	// newOdometerValue (3 bytes, OdometerShort)
+	r.newOdometerValueKm, err = opts.UnmarshalOdometerShort(data[idxNewOdometer : idxNewOdometer+3])
+	if err != nil {
+		return gen2CalibrationRecord{}, fmt.Errorf("new odometer value: %w", err)
+	}
 
 	// oldTimeValue (4 bytes, TimeReal)
 	r.oldTimeValue, err = opts.UnmarshalTimeReal(data[idxOldTimeValue : idxOldTimeValue+lenTimeValue])
